@@ -1,8 +1,8 @@
 [package]
 name = "faad2-sys"
-version = "0.1.0"
+version = "2.11.2"
 authors = ["Hailey Somerville <hailey@hailey.lol>"]
-edition = "2018"
+edition = "2021"
 license = "GPL-2.0"
 description = "FFI bindings for libfaad2"
 homepage = "https://github.com/haileys/faad2-rs"

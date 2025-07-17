@@ -6,7 +6,7 @@ use std::ptr;
 use std::slice;
 use std::str;
 
-use faad2_sys::{self, NeAACDecHandle, c_char, c_uchar, c_ulong};
+use faad2_sys::{self, c_char, c_uchar, c_ulong, NeAACDecHandle};
 
 unsafe fn static_cstr(ptr: *const c_char) -> &'static str {
     str::from_utf8_unchecked(CStr::from_ptr(ptr).to_bytes())
@@ -27,9 +27,7 @@ pub struct Error(c_uchar);
 
 impl Error {
     pub fn message(&self) -> &'static str {
-        unsafe {
-            static_cstr(faad2_sys::NeAACDecGetErrorMessage(self.0))
-        }
+        unsafe { static_cstr(faad2_sys::NeAACDecGetErrorMessage(self.0)) }
     }
 }
 
@@ -41,7 +39,12 @@ impl Display for Error {
 
 impl Debug for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Error {{ code: {:?}, message: {:?} }}", self.0, self.message())
+        write!(
+            f,
+            "Error {{ code: {:?}, message: {:?} }}",
+            self.0,
+            self.message()
+        )
     }
 }
 
@@ -90,7 +93,7 @@ impl Decoder {
         unsafe {
             let decoder = DecoderHandle::alloc();
 
-            let mut config = faad2_sys::NeAACDecGetCurrentConfiguration(decoder.handle);
+            let config = faad2_sys::NeAACDecGetCurrentConfiguration(decoder.handle);
             (*config).outputFormat = faad2_sys::FAAD_FMT_FLOAT;
             if faad2_sys::NeAACDecSetConfiguration(decoder.handle, config) != 1 {
                 return Err(());
@@ -145,7 +148,10 @@ impl Decoder {
             }
 
             let info = DecodeResult {
-                samples: slice::from_raw_parts::<f32>(samples as *const f32, frame_info.samples as usize),
+                samples: slice::from_raw_parts::<f32>(
+                    samples as *const f32,
+                    frame_info.samples as usize,
+                ),
                 bytes_consumed: frame_info.bytesconsumed as usize,
                 channels: frame_info.channels as usize,
                 sample_rate: frame_info.samplerate as usize,

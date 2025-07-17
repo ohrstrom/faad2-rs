@@ -41,7 +41,8 @@ static FAAD_INCLUDE_DIR: &'static str = "faad2/include";
 static FAAD_INCLUDE: &'static str = "neaacdec.h";
 
 fn sources() -> Vec<String> {
-    FAAD_SOURCES.iter()
+    FAAD_SOURCES
+        .iter()
         .map(|file| format!("{}/{}", FAAD_SOURCE_DIR, file))
         .collect()
 }
@@ -52,7 +53,10 @@ fn main() {
         println!("cargo:rerun-if-changed={}", src);
     }
 
-    println!("cargo:rerun-if-changed={}/{}", FAAD_INCLUDE_DIR, FAAD_INCLUDE);
+    println!(
+        "cargo:rerun-if-changed={}/{}",
+        FAAD_INCLUDE_DIR, FAAD_INCLUDE
+    );
 
     cc::Build::new()
         .warnings(false)
@@ -65,7 +69,7 @@ fn main() {
         .define("HAVE_STDLIB_H", "1")
         .define("HAVE_STRCHR", "1")
         .define("STDC_HEADERS", "1")
-        .define("PACKAGE_VERSION", "\"2.9.1\"")
+        .define("PACKAGE_VERSION", "\"2.11.2\"")
         .compile("libfaad2.a");
 
     println!("cargo:rustc-link-lib=faad2");

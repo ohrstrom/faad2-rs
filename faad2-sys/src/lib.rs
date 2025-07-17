@@ -1,4 +1,4 @@
-pub use std::os::raw::{c_char, c_int, c_long, c_uchar, c_ushort, c_ulong, c_void};
+pub use std::os::raw::{c_char, c_int, c_long, c_uchar, c_ulong, c_ushort, c_void};
 
 pub type NeAACDecHandle = *mut c_void;
 
@@ -45,8 +45,7 @@ pub struct NeAACDecConfiguration {
 
 #[repr(C)]
 #[allow(non_snake_case)]
-pub struct NeAACDecFrameInfo
-{
+pub struct NeAACDecFrameInfo {
     pub bytesconsumed: c_ulong,
     pub samples: c_ulong,
     pub channels: c_uchar,
@@ -74,17 +73,13 @@ pub struct NeAACDecFrameInfo
 }
 
 extern "C" {
-    pub fn NeAACDecGetErrorMessage(
-        errcode: c_uchar,
-    ) -> *const c_char;
+    pub fn NeAACDecGetErrorMessage(errcode: c_uchar) -> *const c_char;
 
     pub fn NeAACDecGetCapabilities() -> c_ulong;
 
     pub fn NeAACDecOpen() -> NeAACDecHandle;
 
-    pub fn NeAACDecGetCurrentConfiguration(
-        decoder: NeAACDecHandle,
-    ) -> *mut NeAACDecConfiguration;
+    pub fn NeAACDecGetCurrentConfiguration(decoder: NeAACDecHandle) -> *mut NeAACDecConfiguration;
 
     pub fn NeAACDecSetConfiguration(
         decoder: NeAACDecHandle,
@@ -116,14 +111,9 @@ extern "C" {
         channels: c_uchar,
     ) -> c_uchar;
 
-    pub fn NeAACDecPostSeekReset(
-        decoder: NeAACDecHandle,
-        frame: c_long,
-    );
+    pub fn NeAACDecPostSeekReset(decoder: NeAACDecHandle, frame: c_long);
 
-    pub fn NeAACDecClose(
-        decoder: NeAACDecHandle,
-    );
+    pub fn NeAACDecClose(decoder: NeAACDecHandle);
 
     pub fn NeAACDecDecode(
         decoder: NeAACDecHandle,
@@ -148,4 +138,35 @@ extern "C" {
     ) -> c_uchar;
 
     pub fn NeAACDecGetVersion(id: *mut *const c_char, copyright: *mut *const c_char) -> c_int;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::ffi::CStr;
+
+    #[test]
+    fn version_and_copyright() {
+        unsafe {
+            let mut id: *const c_char = std::ptr::null();
+            let mut copyright: *const c_char = std::ptr::null();
+
+            let ret = NeAACDecGetVersion(&mut id, &mut copyright);
+
+            assert_eq!(ret, 0, "Expected version function to return 1");
+
+            let version_str = CStr::from_ptr(id).to_str().unwrap();
+
+            assert!(version_str == "2.11.2");
+        }
+    }
+
+    #[test]
+    fn can_instantiate_decoder() {
+        unsafe {
+            let decoder = NeAACDecOpen();
+            assert!(!decoder.is_null(), "Decoder pointer should not be null");
+            NeAACDecClose(decoder);
+        }
+    }
 }
